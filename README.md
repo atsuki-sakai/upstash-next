@@ -20,6 +20,33 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Upstash Workflow Setup
+
+### Local Development
+
+1. **Start QStash local server:**
+   ```bash
+   npx @upstash/qstash-cli dev
+   ```
+
+2. **Environment Configuration:**
+   - `.env.local` overrides `.env` settings for local development
+   - **🚨 Important:** Never include `QSTASH_CURRENT_SIGNING_KEY` and `QSTASH_NEXT_SIGNING_KEY` in local development
+   - Signature keys cause "Failed to verify Workflow request" errors when calling endpoints directly
+   - Refer to comments in `.env` file for detailed explanation
+
+3. **Test Workflow:**
+   - Visit `http://localhost:3000/workflow`
+   - Click "Start Workflow" button
+
+### Troubleshooting
+
+If you see `Failed to verify that the Workflow request comes from QStash` error:
+1. Check both `.env` and `.env.local` files
+2. Ensure signature keys are commented out or removed
+3. Restart Next.js development server
+4. Use `grep -r "QSTASH_CURRENT_SIGNING_KEY" . --exclude-dir=node_modules` to find any remaining references
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
