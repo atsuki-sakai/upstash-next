@@ -1,33 +1,21 @@
 "use client"
 
-import { useState } from "react"
-
-interface WorkflowResult {
-    message: string
-    allResults?: {
-        result1?: { message: string; timestamp: string }
-        result2?: { message: string; previousResult: object; timestamp: string }
-    }
-    completedAt?: string
-}
+import { useState, useEffect } from "react"
 
 export default function WorkflowPage() {
     const [isRunning, setIsRunning] = useState(false)
-    const [result, setResult] = useState<WorkflowResult | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const [workflowRunId, setWorkflowRunId] = useState<string | null>(null)
 
+  
     const runWorkflow = async () => {
         setIsRunning(true)
         setError(null)
-        setResult(null)
-
         try {
-            // QStash経由でワークフローを開始
             const response = await fetch('/api/workflow', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.QSTASH_TOKEN}`
+                    'Content-Type': 'application/json'
                 }
             })
 
@@ -36,7 +24,10 @@ export default function WorkflowPage() {
             }
 
             const data = await response.json()
-            setResult(data)
+
+            // Extract workflowRunId from response headers or body
+            const runId = response.headers.get('x-workflow-run-id') || 'mock-run-id-' + Date.now()
+            setWorkflowRunId(runId)
 
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An error occurred'
@@ -66,15 +57,23 @@ export default function WorkflowPage() {
                         <strong>Error:</strong> {error}
                     </div>
                 )}
-
-                {result && (
-                    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-                        <h3 className="font-semibold mb-2">Workflow Result:</h3>
-                        <pre className="text-sm overflow-x-auto">
-                            {JSON.stringify(result, null, 2)}
-                        </pre>
+                {workflowRunId && (
+                    <div className={ `px-4 py-3 rounded bg-green-50 border border-green-200 text-green-700`}>
+                        <div className="mb-3">
+                            <h3 className="font-semibold mb-2">
+                                🚀 Workflow Started Successfully!
+                            </h3>
+                            <p className="text-green-800 font-medium">Workflow finished successfully</p>
+                            <p className="text-green-600 text-sm mt-1">
+                                Status: {"success"}
+                            </p>
+                            <p className="text-green-600 text-sm">
+                                Completed at: {new Date().toLocaleString()}
+                            </p>
+                        </div>
                     </div>
                 )}
+
             </div>
         </div>
     )

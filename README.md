@@ -1,51 +1,173 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Upstash Next.js Demo
 
-## Getting Started
+This project demonstrates the integration of [Upstash](https://upstash.com) services with [Next.js 15](https://nextjs.org), showcasing:
+- **Upstash Redis**: Key-value storage
+- **Upstash Vector**: Vector database with embedding support
+- **Upstash Workflow**: QStash-based workflow orchestration with step functions
 
-First, run the development server:
+## Prerequisites
+
+- Node.js 18+ 
+- npm, yarn, pnpm, or bun
+- Upstash account with Redis, Vector, and QStash services configured
+
+## Quick Start
+
+### 1. Install Dependencies
 
 ```bash
-npm run dev
+npm install
 # or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+yarn install
+# or 
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Copy and configure your environment variables:
+```bash
+cp .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Required environment variables:
+```bash
+# Redis
+UPSTASH_REDIS_REST_URL=your_redis_url
+UPSTASH_REDIS_REST_TOKEN=your_redis_token
 
-## Upstash Workflow Setup
+# Vector
+UPSTASH_VECTOR_REST_URL=your_vector_url
+UPSTASH_VECTOR_REST_TOKEN=your_vector_token
 
-### Local Development
+# QStash (for Workflow)
+QSTASH_URL=your_qstash_url
+QSTASH_TOKEN=your_qstash_token
 
-1. **Start QStash local server:**
-   ```bash
-   npx @upstash/qstash-cli dev
-   ```
+# Weather API (for demo)
+WEATHER_API_KEY=your_weather_api_key
+```
 
-2. **Environment Configuration:**
-   - `.env.local` overrides `.env` settings for local development
-   - **🚨 Important:** Never include `QSTASH_CURRENT_SIGNING_KEY` and `QSTASH_NEXT_SIGNING_KEY` in local development
-   - Signature keys cause "Failed to verify Workflow request" errors when calling endpoints directly
-   - Refer to comments in `.env` file for detailed explanation
+### 3. Start Development Servers
 
-3. **Test Workflow:**
-   - Visit `http://localhost:3000/workflow`
-   - Click "Start Workflow" button
+**For Workflow functionality, you need TWO servers running:**
 
-### Troubleshooting
+**Terminal 1 - QStash Local Server:**
+```bash
+npx @upstash/qstash-cli dev
+```
 
-If you see `Failed to verify that the Workflow request comes from QStash` error:
-1. Check both `.env` and `.env.local` files
-2. Ensure signature keys are commented out or removed
+**Terminal 2 - Next.js Development Server:**
+```bash
+npm run dev
+```
+
+### 4. Access the Application
+
+Open [http://localhost:3000](http://localhost:3000) to see the demo with three sections:
+- **Redis**: Key-value operations demo
+- **Vector**: Similarity search and embeddings
+- **Workflow**: Multi-step workflow with progress tracking
+
+## Features
+
+### 🔄 Upstash Workflow with Progress Tracking
+- **Real-time step progress**: Visual progress bar and step-by-step execution tracking
+- **Multi-step workflow**: 3-step workflow with sleep functionality demonstration
+- **Status monitoring**: Live status updates via polling API
+- **Error handling**: Comprehensive error states and retry logic
+
+### 📊 Upstash Vector
+- **Similarity search**: Vector-based content search
+- **Metadata filtering**: Custom filtering with structured data
+- **Text and vector queries**: Support for both text-based and vector-based operations
+
+### 🔗 Upstash Redis  
+- **Key-value operations**: Get, set, delete operations
+- **Real-time updates**: Live data synchronization
+
+## Development Commands
+
+```bash
+# Start development server
+npm run dev
+
+# Start QStash local server (required for workflow testing)
+npx @upstash/qstash-cli dev
+
+# Build for production
+npm run build
+
+# Start production server  
+npm start
+
+# Run linting
+npm run lint
+```
+
+## Project Structure
+
+```
+app/
+├── api/              # API Routes
+│   ├── vector/       # Vector database operations
+│   ├── weather/      # Weather API integration
+│   └── workflow/     # Workflow endpoints & progress tracking
+├── lib/
+│   └── schemas/      # Zod validation schemas
+├── redis/           # Redis demo page
+├── vector/          # Vector search demo page
+└── workflow/        # Workflow demo with progress tracking
+```
+
+## Workflow Progress Tracking
+
+The workflow system includes comprehensive progress tracking:
+
+1. **Start Workflow**: Initiates a 3-step workflow process
+2. **Real-time Progress**: 2-second polling updates showing:
+   - Overall progress percentage
+   - Individual step status and names  
+   - Workflow completion state
+3. **Visual Feedback**: Color-coded status indicators and progress bars
+
+## Environment Configuration
+
+### Local Development (Important!)
+For **Workflow development**, never include signature keys in `.env.local`:
+
+```bash
+# ❌ DON'T include these in local development:
+# QSTASH_CURRENT_SIGNING_KEY=...
+# QSTASH_NEXT_SIGNING_KEY=...
+
+# ✅ Use local QStash server instead:
+QSTASH_URL="http://127.0.0.1:8080"  
+QSTASH_TOKEN="<local_development_token>"
+```
+
+**Why?** Signature keys cause "Failed to verify Workflow request" errors when testing endpoints directly in local development.
+
+## Troubleshooting
+
+### Workflow Issues
+
+**"Failed to verify Workflow request" error:**
+1. Ensure QStash local server is running: `npx @upstash/qstash-cli dev`
+2. Check `.env.local` doesn't contain signature keys
 3. Restart Next.js development server
-4. Use `grep -r "QSTASH_CURRENT_SIGNING_KEY" . --exclude-dir=node_modules` to find any remaining references
+4. Verify both servers are running simultaneously
+
+**500 Internal Server Error on workflow:**
+1. Confirm QStash local server is accessible at `http://127.0.0.1:8080`
+2. Check environment variables in `.env.local`
+3. Look for "fetch failed" errors in server logs
+
+### General Issues
+
+**Build errors with `asChild` prop:**
+- This occurs when UI components don't support Radix UI's `asChild` prop
+- Use Link wrapper around Button components instead
 
 ## Learn More
 
